@@ -6,7 +6,6 @@ import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import Home from './pages/Home';
 import { 
-  Listings, 
   ListingDetail, 
   CreateListing, 
   Profile, 
@@ -14,6 +13,7 @@ import {
   AdminDashboard, 
   FreeItems 
 } from './pages/PlaceholderPages';
+import ListingsPage from './pages/ListingsPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -30,7 +30,7 @@ function App() {
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/listings" element={<Listings />} />
+                <Route path="/listings" element={<ListingsPage />} />
                 <Route path="/listing/:id" element={<ListingDetail />} />
                 <Route path="/free" element={<FreeItems />} />
                 <Route path="/login" element={<Login />} />

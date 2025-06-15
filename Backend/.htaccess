@@ -1,8 +1,13 @@
 RewriteEngine On
 
 # Handle CORS preflight requests
+RewriteEngine On
+RewriteBase /bsg/Backend/
+
+# Handle CORS preflight requests
 RewriteCond %{REQUEST_METHOD} OPTIONS
 RewriteRule ^(.*)$ public/index.php [QSA,L]
+
 
 # Route all requests to public/index.php
 RewriteCond %{REQUEST_FILENAME} !-f
@@ -15,7 +20,6 @@ Header always set X-Frame-Options DENY
 Header always set X-XSS-Protection "1; mode=block"
 
 # CORS headers
-Header always set Access-Control-Allow-Origin "*"
 Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
 Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
 Header always set Access-Control-Max-Age "3600"
