@@ -1,0 +1,14 @@
+{
+    "name": "bsg/marketplace-api",
+    "description": "BSG Marketplace REST API built with PHP",
+    "type": "project",
+    "require": {
+        "firebase/php-jwt": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BSG\\": "src/"
+        }
+    }
+}
+
