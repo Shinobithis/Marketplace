@@ -7,12 +7,12 @@ import Footer from './components/common/Footer';
 import Home from './pages/Home';
 import { 
   ListingDetail, 
-  CreateListing, 
   Profile, 
   Messages, 
-  AdminDashboard, 
-  FreeItems 
+  AdminDashboard,
 } from './pages/PlaceholderPages';
+import CreateListingPage from './pages/CreateListingPage';
+import FreeItemsPage from './pages/FreeItemsPage';
 import ListingsPage from './pages/ListingsPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -32,16 +32,17 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/listings" element={<ListingsPage />} />
                 <Route path="/listing/:id" element={<ListingDetail />} />
-                <Route path="/free" element={<FreeItems />} />
+                <Route path="/free" element={<FreeItemsPage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 
                 {/* Protected Routes */}
                 <Route path="/create-listing" element={
                   <ProtectedRoute>
-                    <CreateListing />
+                    <CreateListingPage />
                   </ProtectedRoute>
                 } />
+
                 <Route path="/profile" element={
                   <ProtectedRoute>
                     <Profile />

@@ -63,29 +63,40 @@ class ListingController {
         Response::success($listing);
     }
 
-    public function create() {
+        public function create() {
         $user_data = AuthMiddleware::authenticate();
-        $data = json_decode(file_get_contents("php://input"), true);
+        $data = $_POST;
 
-        // Validate input
+        $files = $_FILES;
+
         $validator = new Validator();
         $validator
-            ->required('title', $data['title'] ?? '')
-            ->required('description', $data['description'] ?? '')
-            ->required('category_id', $data['category_id'] ?? '')
-            ->required('condition_type', $data['condition_type'] ?? '')
-            ->required('location', $data['location'] ?? '')
-            ->numeric('category_id', $data['category_id'] ?? '')
-            ->numeric('price', $data['price'] ?? 0)
-            ->in('condition_type', $data['condition_type'] ?? '', ['new', 'like_new', 'good', 'fair', 'poor'])
-            ->maxLength('title', $data['title'] ?? '', 200)
-            ->maxLength('location', $data['location'] ?? '', 100);
+            ->required("title", $data["title"] ?? "")
+            ->required("description", $data["description"] ?? "")
+            ->required("category_id", $data["category_id"] ?? "")
+            ->required("condition_type", $data["condition_type"] ?? "")
+            ->required("location", $data["location"] ?? "")
+            ->numeric("category_id", $data["category_id"] ?? "")
+            ->numeric("price", $data["price"] ?? 0)
+            ->in("condition_type", $data["condition_type"] ?? "", ["new", "like_new", "good", "fair", "poor"])
+            ->maxLength("title", $data["title"] ?? "", 200)
+            ->maxLength("location", $data["location"] ?? "", 100);
 
-        // Validate category exists
-        if (!empty($data['category_id'])) {
-            $category = $this->category->findById($data['category_id']);
+        if (!empty($data["category_id"])) {
+            $category = $this->category->findById($data["category_id"]);
             if (!$category) {
-                $validator->errors['category_id'] = 'Invalid category';
+                $validator->addError("category_id", "Invalid category");
+            }
+        
+
+        if (empty($files["images"]) || !is_array($files["images"]["name"])) {
+            $validator->addError("images", "At least one image is required");
+        } else {
+            foreach ($files["images"]["error"] as $error) {
+                if ($error !== UPLOAD_ERR_OK) {
+                    $validator->addError("images", "Image upload error");
+                    break;
+                }
             }
         }
 
@@ -94,19 +105,40 @@ class ListingController {
         }
 
         $listing_data = [
-            'user_id' => $user_data['id'],
-            'category_id' => $data['category_id'],
-            'title' => $data['title'],
-            'description' => $data['description'],
-            'price' => $data['price'] ?? 0,
-            'condition_type' => $data['condition_type'],
-            'location' => $data['location'],
-            'is_free' => ($data['price'] ?? 0) == 0 ? 1 : 0
+            "user_id" => $user_data["id"],
+            "category_id" => (int)$data["category_id"],
+            "title" => $data["title"],
+            "description" => $data["description"],
+            "price" => (float)($data["price"] ?? 0),
+            "condition_type" => $data["condition_type"],
+            "location" => $data["location"],
+            "is_free" => ((float)($data["price"] ?? 0)) == 0 ? 1 : 0
         ];
 
         $listing_id = $this->listing->create($listing_data);
 
         if ($listing_id) {
+            $upload_dir = __DIR__ . "/../public/uploads/listings/";
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+
+            $uploaded_images = [];
+            foreach ($files["images"]["tmp_name"] as $key => $tmp_name) {
+                $file_name = uniqid() . "_" . basename($files["images"]["name"][$key]);
+                $target_file = $upload_dir . $file_name;
+
+                if (move_uploaded_file($tmp_name, $target_file)) {
+                    $uploaded_images[] = ["listing_id" => $listing_id, "image_url" => "/uploads/listings/" . $file_name];
+                } else {
+                    error_log("Failed to upload image: " . $files["images"]["name"][$key]);
+                }
+            }
+
+            if (!empty($uploaded_images)) {
+                $this->listing->saveImages($uploaded_images);
+            }
+
             $listing = $this->listing->findById($listing_id);
             Response::success($listing, "Listing created successfully", 201);
         } else {

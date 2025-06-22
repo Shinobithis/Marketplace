@@ -12,9 +12,9 @@ class User {
     }
 
     public function create($data) {
-        $query = "INSERT INTO " . $this->table_name . " 
-                  (username, email, password_hash, first_name, last_name, phone) 
-                  VALUES (:username, :email, :password_hash, :first_name, :last_name, :phone)";
+        $query = "INSERT INTO " . $this->table_name . 
+            " (username, email, password_hash, first_name, last_name, phone, is_active) 
+            VALUES (:username, :email, :password_hash, :first_name, :last_name, :phone, :is_active)";
 
         $stmt = $this->conn->prepare($query);
 
@@ -24,6 +24,8 @@ class User {
         $stmt->bindParam(":first_name", $data['first_name']);
         $stmt->bindParam(":last_name", $data['last_name']);
         $stmt->bindParam(":phone", $data['phone']);
+        $is_active = 1;
+        $stmt->bindParam(":is_active", $is_active);
 
         if ($stmt->execute()) {
             return $this->conn->lastInsertId();

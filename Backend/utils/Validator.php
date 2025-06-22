@@ -76,8 +76,13 @@ class Validator {
         return $this->errors;
     }
 
-    public function getFirstError() {
+        public function getFirstError() {
         return !empty($this->errors) ? reset($this->errors) : null;
+    }
+
+    public function addError($field, $message) {
+        $this->errors[$field] = $message;
+        return $this;
     }
 }
 

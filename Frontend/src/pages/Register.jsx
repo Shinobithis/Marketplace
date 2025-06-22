@@ -10,8 +10,8 @@ import { Eye, EyeOff, ShoppingBag, Check, X } from 'lucide-react';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     username: '',
     email: '',
     password: '',
@@ -50,7 +50,6 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Validation
     if (!isPasswordValid) {
       toast.error('Please meet all password requirements');
       setLoading(false);
@@ -114,26 +113,26 @@ const Register = () => {
               {/* Name Fields */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="first_name">First Name</Label>
                   <Input
-                    id="firstName"
-                    name="firstName"
+                    id="first_name"
+                    name="first_name"
                     type="text"
                     required
-                    value={formData.firstName}
+                    value={formData.first_name}
                     onChange={handleChange}
                     placeholder="John"
                     className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="last_name">Last Name</Label>
                   <Input
-                    id="lastName"
-                    name="lastName"
+                    id="last_name"
+                    name="last_name"
                     type="text"
                     required
-                    value={formData.lastName}
+                    value={formData.last_name}
                     onChange={handleChange}
                     placeholder="Doe"
                     className="mt-1"
@@ -151,7 +150,7 @@ const Register = () => {
                   required
                   value={formData.username}
                   onChange={handleChange}
-                  placeholder="johndoe"
+                  placeholder="shinobi"
                   className="mt-1"
                 />
               </div>
@@ -167,7 +166,7 @@ const Register = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="john@example.com"
+                  placeholder="shinobi@example.com"
                   className="mt-1"
                 />
               </div>
@@ -309,4 +308,3 @@ const Register = () => {
 };
 
 export default Register;
-

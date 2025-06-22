@@ -15,7 +15,7 @@ class JWTHelper {
 
     public static function generateToken($user_data) {
         $issued_at = time();
-        $expiration_time = $issued_at + (24 * 60 * 60); // 24 hours
+        $expiration_time = $issued_at + (24 * 60 * 60);
 
         $payload = array(
             "iss" => self::$issuer,

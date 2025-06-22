@@ -19,7 +19,6 @@ export const ToastProvider = ({ children }) => {
     
     setToasts(prev => [...prev, toast]);
     
-    // Auto remove after 5 seconds
     setTimeout(() => {
       removeToast(id);
     }, 5000);
@@ -66,4 +65,3 @@ export const ToastProvider = ({ children }) => {
     </ToastContext.Provider>
   );
 };
-

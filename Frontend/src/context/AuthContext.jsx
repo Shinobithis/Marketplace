@@ -31,53 +31,58 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+    const login = async (email, password) => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          localStorage.setItem('token', data.data.token);
+          localStorage.setItem('user', JSON.stringify(data.data.user));
+          setUser(data.data.user);
+          return { success: true };
+        } else {
+          return { success: false, error: data.message || 'Login failed' };
+        }
+      } catch (error) {
+        console.error('Login API call error:', error);
+        return { success: false, error: 'Network error or server unreachable' };
+      }
+    };
+
+    const register = async (userData) => {
     try {
-      // Mock login - replace with actual API call
-      const mockUser = {
-        id: 1,
-        username: 'testuser',
-        email: email,
-        firstName: 'Test',
-        lastName: 'User',
-        isAdmin: email === 'admin@bsg.com'
-      };
-      
-      const mockToken = 'mock-jwt-token';
-      
-      localStorage.setItem('token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      setUser(mockUser);
-      
-      return { success: true };
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        setUser(data.data.user);
+        return { success: true };
+      } else {
+        return { success: false, error: data.message || 'Registration failed' };
+      }
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Registration API call error:', error);
+      return { success: false, error: 'Network error or server unreachable' };
     }
   };
 
-  const register = async (userData) => {
-    try {
-      // Mock registration - replace with actual API call
-      const newUser = {
-        id: Date.now(),
-        username: userData.username,
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        isAdmin: false
-      };
-      
-      const mockToken = 'mock-jwt-token';
-      
-      localStorage.setItem('token', mockToken);
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setUser(newUser);
-      
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  };
 
   const logout = () => {
     localStorage.removeItem('token');

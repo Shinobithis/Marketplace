@@ -69,11 +69,9 @@ class Listing {
             $params[':max_price'] = $filters['max_price'];
         }
 
-        // Pagination
         $limit = isset($filters['limit']) ? (int)$filters['limit'] : 20;
         $offset = isset($filters['offset']) ? (int)$filters['offset'] : 0;
 
-        // Order by
         $order_by = "l.created_at DESC";
         if (!empty($filters['sort'])) {
             switch ($filters['sort']) {
@@ -246,6 +244,35 @@ class Listing {
         $stmt->execute($params);
 
         return $stmt->fetchColumn();
+    }
+
+    public function saveImages($images) {
+        if (empty($images)) {
+            return false;
+        }
+
+        $query = "INSERT INTO listing_images (listing_id, image_url, is_primary, sort_order) VALUES ";
+        $values = [];
+        $params = [];
+        $counter = 0;
+
+        foreach ($images as $index => $image) {
+            $values[] = "(:listing_id{$index}, :image_url{$index}, :is_primary{$index}, :sort_order{$index})";
+            $params[":listing_id{$index}"] = $image["listing_id"];
+            $params[":image_url{$index}"] = $image["image_url"];
+            $params[":is_primary{$index}"] = ($index === 0) ? 1 : 0;
+            $params[":sort_order{$index}"] = $index;
+        }
+
+        $query .= implode(", ", $values);
+
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $key=>$val) {
+            $stmt->bindValue($key, $val);
+        }
+
+        return $stmt->execute();
     }
 }
 

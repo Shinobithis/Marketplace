@@ -23,7 +23,6 @@ class AuthController {
     public function register() {
         $data = json_decode(file_get_contents("php://input"), true);
 
-        // Validate input
         $validator = new Validator();
         $validator
             ->required('username', $data['username'] ?? '')
@@ -36,12 +35,10 @@ class AuthController {
             ->minLength('username', $data['username'] ?? '', 3)
             ->maxLength('username', $data['username'] ?? '', 50);
 
-        // Check if email already exists
         if (!empty($data['email']) && $this->user->emailExists($data['email'])) {
             $validator->errors['email'] = 'Email already exists';
         }
 
-        // Check if username already exists
         if (!empty($data['username']) && $this->user->usernameExists($data['username'])) {
             $validator->errors['username'] = 'Username already exists';
         }
@@ -50,10 +47,8 @@ class AuthController {
             Response::validationError($validator->getErrors());
         }
 
-        // Hash password
         $password_hash = $this->user->hashPassword($data['password']);
 
-        // Create user
         $user_data = [
             'username' => $data['username'],
             'email' => $data['email'],
@@ -81,7 +76,6 @@ class AuthController {
     public function login() {
         $data = json_decode(file_get_contents("php://input"), true);
 
-        // Validate input
         $validator = new Validator();
         $validator
             ->required('email', $data['email'] ?? '')
@@ -92,17 +86,14 @@ class AuthController {
             Response::validationError($validator->getErrors());
         }
 
-        // Find user by email
         $user = $this->user->findByEmail($data['email']);
 
         if (!$user || !$this->user->verifyPassword($data['password'], $user['password_hash'])) {
             Response::error("Invalid email or password", 401);
         }
 
-        // Remove password hash from response
         unset($user['password_hash']);
 
-        // Generate JWT token
         $token = JWTHelper::generateToken($user);
 
         Response::success([
@@ -154,9 +145,6 @@ class AuthController {
     }
 
     public function logout() {
-        // Since we're using stateless JWT, logout is handled on the client side
-        // We could implement a token blacklist here if needed
         Response::success(null, "Logged out successfully");
     }
 }
-

@@ -3,17 +3,13 @@
  * Main API Router
  */
 
-// Enable error reporting for development
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Set timezone
 date_default_timezone_set('UTC');
 
-// Include CORS middleware
 require_once __DIR__ . '/../config/cors.php';
 
-// Handle CORS
 CorsMiddleware::handle();
 
 // Include controllers
@@ -26,37 +22,27 @@ require_once __DIR__ . '/../utils/Response.php';
 $request_method = $_SERVER['REQUEST_METHOD'];
 $request_uri = $_SERVER['REQUEST_URI'];
 
-// Remove query string from URI
 $uri_parts = explode('?', $request_uri);
 $path = $uri_parts[0];
 
-// Get the base path of the script (e.g., /bsg-api/public/index.php)
 $script_name = $_SERVER['SCRIPT_NAME'];
 
-// Remove the script name's directory from the path to get the actual route
-// Example: /bsg-api/public/auth/login - /bsg-api/public = /auth/login
 $route = substr($path, strlen(dirname($script_name)));
 
-// Remove leading and trailing slashes
 $route = trim($route, '/');
 
-// Split path into segments
 $segments = explode('/', $route);
 
-// If the first segment is empty, it means we are at the root of the API
+
 if (empty($segments[0])) {
-    $segments = []; // Or handle as a default route
+    $segments = [];
 }
 
 try {
-    // Route the request
-    // Check if segments array is empty (i.e., root URL access)
     if (empty($segments[0])) {
-        // Handle the root path, e.g., return API status or a default message
         Response::json(["success" => true, "message" => "BSG Marketplace API is running", "data" => ["name" => "BSG Marketplace API", "version" => "1.0.0", "endpoints" => ["auth" => "/api/auth", "listings" => "/api/listings", "categories" => "/api/categories"]]]);
-        exit(); // Stop further execution
+        exit();
     }
-    // Route the request
     switch ($segments[0]) {
         case 'auth':
             $controller = new AuthController();
@@ -74,7 +60,6 @@ try {
             break;
             
         case '':
-            // API root - return API info
             Response::success([
                 'name' => 'BSG Marketplace API',
                 'version' => '1.0.0',

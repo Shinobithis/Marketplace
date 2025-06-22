@@ -32,23 +32,23 @@ class Database {
         return $this->conn;
     }
 
-    public function createDatabase() {
-        try {
-            $conn = new PDO(
-                "mysql:host=" . $this->host . ";charset=utf8",
-                $this->username,
-                $this->password
-            );
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // public function createDatabase() {
+    //     try {
+    //         $conn = new PDO(
+    //             "mysql:host=" . $this->host . ";charset=utf8",
+    //             $this->username,
+    //             $this->password
+    //         );
+    //         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             
-            $sql = "CREATE DATABASE IF NOT EXISTS " . $this->db_name . " CHARACTER SET utf8 COLLATE utf8_general_ci";
-            $conn->exec($sql);
+    //         $sql = "CREATE DATABASE IF NOT EXISTS " . $this->db_name . " CHARACTER SET utf8 COLLATE utf8_general_ci";
+    //         $conn->exec($sql);
             
-            return true;
-        } catch(PDOException $exception) {
-            error_log("Database creation error: " . $exception->getMessage());
-            return false;
-        }
-    }
+    //         return true;
+    //     } catch(PDOException $exception) {
+    //         error_log("Database creation error: " . $exception->getMessage());
+    //         return false;
+    //     }
+    // }
 }
 
