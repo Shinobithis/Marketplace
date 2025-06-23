@@ -60,6 +60,12 @@ class ListingController {
             Response::notFound("Listing not found");
         }
 
+        // Increment view count
+        $this->listing->incrementViews($id);
+        
+        // Get updated listing with new view count
+        $listing = $this->listing->findById($id);
+
         Response::success($listing);
     }
 
@@ -87,7 +93,7 @@ class ListingController {
             if (!$category) {
                 $validator->addError("category_id", "Invalid category");
             }
-        
+        }
 
         if (empty($files["images"]) || !is_array($files["images"]["name"])) {
             $validator->addError("images", "At least one image is required");

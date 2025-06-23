@@ -16,6 +16,8 @@ CorsMiddleware::handle();
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/ListingController.php';
 require_once __DIR__ . '/../controllers/CategoryController.php';
+require_once __DIR__ . '/../controllers/MessageController.php';
+require_once __DIR__ . '/../controllers/AdminController.php';
 require_once __DIR__ . '/../utils/Response.php';
 
 // Get request method and URI
@@ -57,6 +59,16 @@ try {
         case 'categories':
             $controller = new CategoryController();
             handleCategoryRoutes($controller, $segments, $request_method);
+            break;
+            
+        case 'messages':
+            $controller = new MessageController();
+            handleMessageRoutes($controller, $segments, $request_method);
+            break;
+            
+        case 'admin':
+            $controller = new AdminController();
+            handleAdminRoutes($controller, $segments, $request_method);
             break;
             
         case '':
@@ -197,3 +209,75 @@ function handleCategoryRoutes($controller, $segments, $method) {
             Response::error('Method not allowed', 405);
     }
 }
+function handleMessageRoutes($controller, $segments, $method) {
+    $action = $segments[1] ?? '';
+    
+    switch ($method) {
+        case 'GET':
+            switch ($action) {
+                case 'conversations':
+                    $controller->getConversations();
+                    break;
+                case '':
+                    $controller->getMessages();
+                    break;
+                default:
+                    Response::notFound('Message endpoint not found');
+            }
+            break;
+            
+        case 'POST':
+            switch ($action) {
+                case 'mark-read':
+                    $controller->markAsRead();
+                    break;
+                case '':
+                    $controller->create();
+                    break;
+                default:
+                    Response::notFound('Message endpoint not found');
+            }
+            break;
+            
+        default:
+            Response::error('Method not allowed', 405);
+    }
+}
+
+function handleAdminRoutes($controller, $segments, $method) {
+    $action = $segments[1] ?? '';
+    $id = $segments[2] ?? null;
+    $subaction = $segments[3] ?? '';
+    
+    switch ($method) {
+        case 'GET':
+            switch ($action) {
+                case 'stats':
+                    $controller->getStats();
+                    break;
+                case 'users':
+                    $controller->getUsers();
+                    break;
+                case 'listings':
+                    $controller->getListings();
+                    break;
+                default:
+                    Response::notFound('Admin endpoint not found');
+            }
+            break;
+            
+        case 'PUT':
+            if ($action === 'users' && $id && $subaction === 'toggle-status') {
+                $controller->toggleUserStatus($id);
+            } elseif ($action === 'listings' && $id && $subaction === 'toggle-status') {
+                $controller->toggleListingStatus($id);
+            } else {
+                Response::notFound('Admin endpoint not found');
+            }
+            break;
+            
+        default:
+            Response::error('Method not allowed', 405);
+    }
+}
+

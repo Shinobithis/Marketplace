@@ -120,5 +120,62 @@ class User {
 
         return $stmt->fetchColumn() > 0;
     }
+
+    public function getCount($filters = []) {
+        $query = "SELECT COUNT(*) FROM " . $this->table_name;
+        $where_conditions = [];
+        $params = [];
+
+        if (isset($filters['is_active'])) {
+            $where_conditions[] = "is_active = :is_active";
+            $params[':is_active'] = $filters['is_active'];
+        }
+
+        if (!empty($where_conditions)) {
+            $query .= " WHERE " . implode(' AND ', $where_conditions);
+        }
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute($params);
+
+        return $stmt->fetchColumn();
+    }
+
+    public function getAll($limit = 50, $offset = 0) {
+        $query = "SELECT id, username, email, first_name, last_name, phone, role, is_active, created_at 
+                  FROM " . $this->table_name . " 
+                  ORDER BY created_at DESC 
+                  LIMIT :limit OFFSET :offset";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getRecent($limit = 5) {
+        $query = "SELECT id, username, email, first_name, last_name, created_at 
+                  FROM " . $this->table_name . " 
+                  WHERE is_active = 1 
+                  ORDER BY created_at DESC 
+                  LIMIT :limit";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateStatus($id, $status) {
+        $query = "UPDATE " . $this->table_name . " SET is_active = :status WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':status', $status);
+        
+        return $stmt->execute();
+    }
 }
 

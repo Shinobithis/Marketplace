@@ -5,12 +5,10 @@ import { ToastProvider } from './context/ToastContext';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import Home from './pages/Home';
-import { 
-  ListingDetail, 
-  Profile, 
-  Messages, 
-  AdminDashboard,
-} from './pages/PlaceholderPages';
+import ListingDetail from './pages/ListingDetail';
+import Profile from './pages/Profile';
+import Messages from './pages/Messages';
+import AdminDashboard from './pages/AdminDashboard';
 import CreateListingPage from './pages/CreateListingPage';
 import FreeItemsPage from './pages/FreeItemsPage';
 import ListingsPage from './pages/ListingsPage';

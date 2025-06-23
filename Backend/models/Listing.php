@@ -274,5 +274,45 @@ class Listing {
 
         return $stmt->execute();
     }
-}
 
+    public function getAllForAdmin($limit = 50, $offset = 0) {
+        $query = "SELECT l.*, u.username, u.first_name, u.last_name,
+                         CONCAT(u.first_name, ' ', u.last_name) as seller_name,
+                         c.name as category_name, c.slug as category_slug
+                  FROM " . $this->table_name . " l
+                  LEFT JOIN users u ON l.user_id = u.id
+                  LEFT JOIN categories c ON l.category_id = c.id
+                  ORDER BY l.created_at DESC
+                  LIMIT :limit OFFSET :offset";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getRecent($limit = 5) {
+        $query = "SELECT id, title, price, created_at 
+                  FROM " . $this->table_name . " 
+                  WHERE is_active = 1 
+                  ORDER BY created_at DESC 
+                  LIMIT :limit";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateStatus($id, $status) {
+        $query = "UPDATE " . $this->table_name . " SET is_active = :status WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':status', $status);
+        
+        return $stmt->execute();
+    }
+}

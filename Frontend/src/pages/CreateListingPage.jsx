@@ -69,7 +69,16 @@ const CreateListingPage = () => {
 
       if (response.ok && data.success) {
         showToast('Listing created successfully!', 'success');
-        navigate('/listings'); // Redirect to listings page after creation
+        // Clear form
+        setTitle('');
+        setDescription('');
+        setPrice('');
+        setCategoryId('');
+        setConditionType('');
+        setLocation('');
+        setSelectedFiles([]);
+        // Redirect to listings page
+        navigate('/listings');
       } else {
         showToast(data.message || 'Failed to create listing', 'error');
       }
