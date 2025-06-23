@@ -12,7 +12,6 @@ require_once __DIR__ . '/../config/cors.php';
 
 CorsMiddleware::handle();
 
-// Include controllers
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/ListingController.php';
 require_once __DIR__ . '/../controllers/CategoryController.php';
@@ -186,27 +185,24 @@ function handleListingRoutes($controller, $segments, $method) {
     }
 }
 
-function handleCategoryRoutes($controller, $segments, $method) {
-    $action = $segments[1] ?? '';
-    $subaction = $segments[2] ?? '';
-    
-    switch ($method) {
-        case 'GET':
-            if ($action === '') {
+function handleCategoryRoutes($controller, $segments, $request_method) {
+    switch (count($segments)) {
+        case 1: // /categories
+            if ($request_method == "GET") {
                 $controller->getAll();
-            } elseif (is_numeric($action)) {
-                if ($subaction === 'listings') {
-                    $controller->getListings($action);
-                } else {
-                    $controller->getById($action);
-                }
             } else {
-                Response::notFound('Category endpoint not found');
+                Response::error("Method not allowerd", 405);
             }
             break;
-            
-        default:
-            Response::error('Method not allowed', 405);
+        case 2:
+            if ($segments[1] == "counts" && $request_method == "GET") {
+                $controller->getCounts();
+            } else if (is_numeric($segments[1]) && $request_method == "GET") {
+                $controller->getById($segments[1]);
+            } else {
+                Response::error("Method not allowerd", 405);
+            }
+            break;
     }
 }
 function handleMessageRoutes($controller, $segments, $method) {

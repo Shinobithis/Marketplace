@@ -47,11 +47,13 @@ class ListingController {
     }
 
     public function getFeatured() {
-        $limit = $_GET['limit'] ?? 4;
-        $listings = $this->listing->getFeatured($limit);
+        $limit = $_GET["limit"] ?? 4;
+        $listings = $this->listing->getMostViewed($limit);
 
         Response::success($listings);
     }
+
+
 
     public function getById($id) {
         $listing = $this->listing->findById($id);

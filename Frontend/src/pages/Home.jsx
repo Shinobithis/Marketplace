@@ -12,80 +12,46 @@ const Home = () => {
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Mock data - replace with actual API calls
   useEffect(() => {
-    // Mock featured listings
-    setFeaturedListings([
-      {
-        id: 1,
-        title: 'iPhone 14 Pro Max - Excellent Condition',
-        description: 'Barely used iPhone 14 Pro Max in space black. Includes original box and charger.',
-        price: 899,
-        location: 'New York, NY',
-        createdAt: '2024-01-15',
-        primaryImage: '/src/assets/sample-iphone.jpg',
-        condition: 'Like New',
-        seller: { name: 'John Doe', avatar: '/api/placeholder/32/32' },
-        views: 245
-      },
-      {
-        id: 2,
-        title: 'Vintage Leather Sofa',
-        description: 'Beautiful vintage leather sofa in great condition. Perfect for any living room.',
-        price: 450,
-        location: 'Los Angeles, CA',
-        createdAt: '2024-01-14',
-        primaryImage: '/src/assets/sample-sofa.jpg',
-        condition: 'Good',
-        seller: { name: 'Sarah Smith', avatar: '/api/placeholder/32/32' },
-        views: 189
-      },
-      {
-        id: 3,
-        title: 'Free Moving Boxes',
-        description: 'Giving away moving boxes in various sizes. Perfect for your next move!',
-        price: 0,
-        location: 'Chicago, IL',
-        createdAt: '2024-01-13',
-        primaryImage: '/src/assets/sample-boxes.jpg',
-        condition: 'Used',
-        seller: { name: 'Mike Johnson', avatar: '/api/placeholder/32/32' },
-        views: 67
-      },
-      {
-        id: 4,
-        title: 'Mountain Bike - Trek X-Caliber',
-        description: 'Well-maintained mountain bike, perfect for trails and city riding.',
-        price: 650,
-        location: 'Denver, CO',
-        createdAt: '2024-01-12',
-        primaryImage: '/src/assets/sample-bike.jpg',
-        condition: 'Good',
-        seller: { name: 'Emily Davis', avatar: '/api/placeholder/32/32' },
-        views: 156
+    const fetchFeaturedListings = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/listings/featured`);
+        const data = await response.json();
+        if (response.ok && data.success) {
+          setFeaturedListings(data.data);
+        } else {
+          console.error("Failed to fetch featured listings:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching featured listings:", error);
       }
-    ]);
+    };
+    fetchFeaturedListings();
 
-    // Mock categories
-    setCategories([
-      { id: 1, name: 'Electronics', count: 1234, icon: '📱' },
-      { id: 2, name: 'Furniture', count: 856, icon: '🪑' },
-      { id: 3, name: 'Vehicles', count: 432, icon: '🚗' },
-      { id: 4, name: 'Clothing', count: 678, icon: '👕' },
-      { id: 5, name: 'Books', count: 234, icon: '📚' },
-      { id: 6, name: 'Sports', count: 345, icon: '⚽' },
-      { id: 7, name: 'Home & Garden', count: 567, icon: '🏡' },
-      { id: 8, name: 'Free Items', count: 123, icon: '🎁' }
-    ]);
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/categories/counts`);
+        const data = await response.json();
+        if (response.ok && data.success) {
+          setCategories(data.data); // This will now include listing_count
+        } else {
+          console.error("Failed to fetch categories:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+  fetchCategories();
   }, []);
 
   const handleSearch = (e) => {
-    e.preventDefault();
+  e.preventDefault();
     if (searchQuery.trim()) {
-      // Navigate to listings with search query
       window.location.href = `/listings?search=${encodeURIComponent(searchQuery)}`;
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -160,7 +126,7 @@ const Home = () => {
                     <h3 className="font-semibold text-sm mb-1 group-hover:text-primary transition-colors">
                       {category.name}
                     </h3>
-                    <p className="text-xs text-gray-500">{category.count} items</p>
+                    <p className="text-xs text-gray-500"><span className="text-sm text-gray-500">({category.listing_count})</span>items</p>
                   </CardContent>
                 </Card>
               </Link>

@@ -38,15 +38,15 @@ class Listing {
         $where_conditions = ["l.is_active = 1"];
         $params = [];
 
-        // Add filters
         if (!empty($filters['category_id'])) {
             $where_conditions[] = "l.category_id = :category_id";
             $params[':category_id'] = $filters['category_id'];
         }
 
-        if (!empty($filters['search'])) {
-            $where_conditions[] = "(l.title LIKE :search OR l.description LIKE :search)";
-            $params[':search'] = '%' . $filters['search'] . '%';
+        if (!empty($filters["search"])) {
+            $where_conditions[] = "(l.title LIKE :search_title OR l.description LIKE :search_description)";
+            $params[":search_title"] = '%' . $filters["search"] . '%';
+            $params[":search_description"] = '%' . $filters["search"] . '%';
         }
 
         if (isset($filters['is_free']) && $filters['is_free'] !== '') {
@@ -97,34 +97,38 @@ class Listing {
                   LEFT JOIN users u ON l.user_id = u.id
                   LEFT JOIN categories c ON l.category_id = c.id
                   LEFT JOIN listing_images li ON l.id = li.listing_id AND li.is_primary = 1
-                  WHERE " . implode(' AND ', $where_conditions) . "
+                  " . (!empty($where_conditions) ? "WHERE " . implode(" AND ", $where_conditions) : "") . "
                   ORDER BY {$order_by}
                   LIMIT {$limit} OFFSET {$offset}";
 
         $stmt = $this->conn->prepare($query);
+        error_log("SQL Query: " . $query);
+        error_log("SQL Params: " . print_r($params, true));
         $stmt->execute($params);
+
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getFeatured($limit = 4) {
+    public function getMostViewed($limit = 4) {
         $query = "SELECT l.*, u.username, u.first_name, u.last_name, u.avatar_url,
-                         c.name as category_name, c.slug as category_slug,
-                         li.image_url as primary_image
-                  FROM " . $this->table_name . " l
-                  LEFT JOIN users u ON l.user_id = u.id
-                  LEFT JOIN categories c ON l.category_id = c.id
-                  LEFT JOIN listing_images li ON l.id = li.listing_id AND li.is_primary = 1
-                  WHERE l.is_active = 1 AND l.is_featured = 1
-                  ORDER BY l.created_at DESC
-                  LIMIT :limit";
+                        c.name as category_name, c.slug as category_slug,
+                        li.image_url as primary_image
+                FROM " . $this->table_name . " l
+                LEFT JOIN users u ON l.user_id = u.id
+                LEFT JOIN categories c ON l.category_id = c.id
+                LEFT JOIN listing_images li ON l.id = li.listing_id AND li.is_primary = 1
+                WHERE l.is_active = 1
+                ORDER BY l.views_count DESC, l.created_at DESC
+                LIMIT :limit";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindParam(":limit", $limit, PDO::PARAM_INT);
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
 
     public function findById($id) {
         $query = "SELECT l.*, u.username, u.first_name, u.last_name, u.avatar_url, u.phone,
@@ -223,24 +227,28 @@ class Listing {
         $where_conditions = ["is_active = 1"];
         $params = [];
 
-        // Add same filters as getAll method
         if (!empty($filters['category_id'])) {
             $where_conditions[] = "category_id = :category_id";
             $params[':category_id'] = $filters['category_id'];
         }
 
-        if (!empty($filters['search'])) {
-            $where_conditions[] = "(title LIKE :search OR description LIKE :search)";
-            $params[':search'] = '%' . $filters['search'] . '%';
+        if (!empty($filters["search"])) {
+            $where_conditions[] = "(title LIKE :search_title OR description LIKE :search_description)";
+            $params[":search_title"] = '%' . $filters["search"] . '%';
+            $params[":search_description"] = '%' . $filters["search"] . '%';
         }
+
 
         if (isset($filters['is_free']) && $filters['is_free'] !== '') {
             $where_conditions[] = "is_free = :is_free";
             $params[':is_free'] = $filters['is_free'];
         }
 
-        $query = "SELECT COUNT(*) FROM " . $this->table_name . " WHERE " . implode(' AND ', $where_conditions);
+        $where_clause = !empty($where_conditions) ? " WHERE " . implode(" AND ", $where_conditions) : "";
+        $query = "SELECT COUNT(*) FROM " . $this->table_name . $where_clause;
         $stmt = $this->conn->prepare($query);
+        error_log("COUNT SQL Query: " . $query); 
+        error_log("COUNT SQL Params: " . print_r($params, true));
         $stmt->execute($params);
 
         return $stmt->fetchColumn();

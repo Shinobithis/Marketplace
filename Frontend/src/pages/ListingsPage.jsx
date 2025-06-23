@@ -1,32 +1,48 @@
 import React, { useEffect, useState } from 'react';
-import ListingCard from '../components/listings/ListingCard'; // Assuming you have a ListingCard component
+import { useLocation } from 'react-router-dom';
+import ListingCard from '../components/listings/ListingCard';
 
 const ListingsPage = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const location = useLocation();
+
   useEffect(() => {
     const fetchListings = async () => {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams(location.search);
+      const searchQuery = params.get('search');
+
+      let apiUrl = `${import.meta.env.VITE_API_BASE_URL}/listings`;
+      if (searchQuery) {
+        apiUrl += `${apiUrl.includes('?') ? '&' : '?'}search=${encodeURIComponent(searchQuery)}`;
+      }
+
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/listings`);
+        const response = await fetch(apiUrl);
         const data = await response.json();
 
         if (response.ok && data.success) {
-          setListings(data.data.listings);
+          setListings(data.data.listings || []);
         } else {
           setError(data.message || 'Failed to fetch listings');
+          setListings([]);
         }
       } catch (err) {
         setError('Network error or server unreachable');
         console.error('Error fetching listings:', err);
+        setListings([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchListings();
-  }, []);
+  }, [location.search]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading listings...</div>;

@@ -32,6 +32,12 @@ class CategoryController {
         Response::success($categories);
     }
 
+    public function getCounts() {
+        $category_counts = $this->category->getCategoryCounts();
+        Response::success($category_counts);
+    }
+
+
     public function getById($id) {
         $category = $this->category->findById($id);
 

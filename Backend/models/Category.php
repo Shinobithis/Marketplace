@@ -22,6 +22,20 @@ class Category {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getCategoryCounts() {
+        $query = "SELECT c.id, c.name, c.slug, COUNT(l.id) as listing_count
+                FROM " . $this->table_name . " c
+                LEFT JOIN listings l ON c.id = l.category_id AND l.is_active = 1
+                GROUP BY c.id, c.name, c.slug
+                ORDER BY c.name ASC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
     public function findById($id) {
         $query = "SELECT * FROM " . $this->table_name . " WHERE id = :id AND is_active = 1 LIMIT 1";
         $stmt = $this->conn->prepare($query);
