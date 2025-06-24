@@ -122,8 +122,14 @@ const Home = () => {
               >
                 <Card className="text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105">
                   <CardContent className="p-6">
-                    <div className="text-4xl mb-3">{category.icon}</div>
-                    <h3 className="font-semibold text-sm mb-1 group-hover:text-primary transition-colors">
+                    <img 
+                      src={`${import.meta.env.VITE_API_BASE_URL}uploads/icons/${category.icon}`} 
+                      alt={category.name} 
+                      className="w-16 h-16 mx-auto mb-3" 
+                    />
+                    <h3 
+                      className="font-semibold text-sm mb-1 group-hover:text-primary transition-colors line-clamp-1"
+                    >
                       {category.name}
                     </h3>
                     <p className="text-xs text-gray-500"><span className="text-sm text-gray-500">({category.listing_count})</span>items</p>

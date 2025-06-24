@@ -51,15 +51,12 @@ const ListingCard = ({ listing, onFavorite, isFavorited = false }) => {
   };
 
   const getImageUrl = () => {
-    // Check for primary_image from the backend
     if (listing.primary_image) {
       return listing.primary_image;
     }
-    // Check for primaryImage (frontend mock data)
     if (listing.primaryImage) {
       return listing.primaryImage;
     }
-    // Return placeholder
     return null;
   };
 
@@ -87,14 +84,13 @@ const ListingCard = ({ listing, onFavorite, isFavorited = false }) => {
         {/* Image */}
         <div className="aspect-square bg-gray-200 overflow-hidden">
           {imageUrl ? (
-            <img
-              src={imageUrl}
+            <img 
+              src={listing.primary_image || 
+                  (listing.images && listing.images.length > 0 ? listing.images[0].image_url : 
+                 `${import.meta.env.VITE_API_BASE_URL}uploads/icons/placeholder.svg`)}
               alt={listing.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-              }}
+              className="w-full h-48 object-cover rounded-t-lg"
+              onError={(e) => { e.target.onerror = null; e.target.src = `${import.meta.env.VITE_API_BASE_URL}uploads/icons/placeholder.svg`; }}
             />
           ) : null}
           <div 

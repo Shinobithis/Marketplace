@@ -23,10 +23,10 @@ class Category {
     }
 
     public function getCategoryCounts() {
-        $query = "SELECT c.id, c.name, c.slug, COUNT(l.id) as listing_count
+        $query = "SELECT c.id, c.name, c.slug, c.icon, COUNT(l.id) as listing_count
                 FROM " . $this->table_name . " c
                 LEFT JOIN listings l ON c.id = l.category_id AND l.is_active = 1
-                GROUP BY c.id, c.name, c.slug
+                GROUP BY c.id, c.name, c.slug, c.icon
                 ORDER BY c.name ASC";
 
         $stmt = $this->conn->prepare($query);
