@@ -27,6 +27,7 @@ const ListingsPage = () => {
         const data = await response.json();
 
         if (response.ok && data.success) {
+          console.log("Data received from /listings API:", data.data.listings);
           setListings(data.data.listings || []);
         } else {
           setError(data.message || 'Failed to fetch listings');
@@ -62,6 +63,7 @@ const ListingsPage = () => {
           {listings.map((listing) => (
             <ListingCard key={listing.id} listing={listing} />
           ))}
+          {console.log("Passing to ListingCard:", listings)}
         </div>
       )}
     </div>

@@ -34,57 +34,57 @@ class Listing {
         return false;
     }
 
-    public function getAll($filters = []) {
+    public function getAll($filters = [], $user_id = null) {
         $where_conditions = ["l.is_active = 1"];
         $params = [];
 
-        if (!empty($filters['category_id'])) {
+        if (!empty($filters["category_id"])) {
             $where_conditions[] = "l.category_id = :category_id";
-            $params[':category_id'] = $filters['category_id'];
+            $params[":category_id"] = $filters["category_id"];
         }
 
         if (!empty($filters["search"])) {
             $where_conditions[] = "(l.title LIKE :search_title OR l.description LIKE :search_description)";
-            $params[":search_title"] = '%' . $filters["search"] . '%';
-            $params[":search_description"] = '%' . $filters["search"] . '%';
+            $params[":search_title"] = "%".$filters["search"]."%";
+            $params[":search_description"] = "%".$filters["search"]."%";
         }
 
-        if (isset($filters['is_free']) && $filters['is_free'] !== '') {
+        if (isset($filters["is_free"]) && $filters["is_free"] !== "") {
             $where_conditions[] = "l.is_free = :is_free";
-            $params[':is_free'] = $filters['is_free'];
+            $params[":is_free"] = $filters["is_free"];
         }
 
-        if (!empty($filters['condition'])) {
+        if (!empty($filters["condition"])) {
             $where_conditions[] = "l.condition_type = :condition";
-            $params[':condition'] = $filters['condition'];
+            $params[":condition"] = $filters["condition"];
         }
 
-        if (!empty($filters['min_price'])) {
+        if (!empty($filters["min_price"])) {
             $where_conditions[] = "l.price >= :min_price";
-            $params[':min_price'] = $filters['min_price'];
+            $params[":min_price"] = $filters["min_price"];
         }
 
-        if (!empty($filters['max_price'])) {
+        if (!empty($filters["max_price"])) {
             $where_conditions[] = "l.price <= :max_price";
-            $params[':max_price'] = $filters['max_price'];
+            $params[":max_price"] = $filters["max_price"];
         }
 
-        $limit = isset($filters['limit']) ? (int)$filters['limit'] : 20;
-        $offset = isset($filters['offset']) ? (int)$filters['offset'] : 0;
+        $limit = isset($filters["limit"]) ? (int)$filters["limit"] : 20;
+        $offset = isset($filters["offset"]) ? (int)$filters["offset"] : 0;
 
         $order_by = "l.created_at DESC";
-        if (!empty($filters['sort'])) {
-            switch ($filters['sort']) {
-                case 'price_asc':
+        if (!empty($filters["sort"])) {
+            switch ($filters["sort"]) {
+                case "price_asc":
                     $order_by = "l.price ASC";
                     break;
-                case 'price_desc':
+                case "price_desc":
                     $order_by = "l.price DESC";
                     break;
-                case 'newest':
+                case "newest":
                     $order_by = "l.created_at DESC";
                     break;
-                case 'oldest':
+                case "oldest":
                     $order_by = "l.created_at ASC";
                     break;
             }
@@ -92,12 +92,18 @@ class Listing {
 
         $query = "SELECT l.*, u.username, u.first_name, u.last_name, u.avatar_url,
                          c.name as category_name, c.slug as category_slug,
-                         li.image_url as primary_image
-                  FROM " . $this->table_name . " l
+                         li.image_url as primary_image,
+                         CASE WHEN f.listing_id IS NOT NULL AND f.user_id = :user_id_for_fav THEN 1 ELSE 0 END as is_favorited";
+        
+        $query .= " FROM " . $this->table_name . " l
                   LEFT JOIN users u ON l.user_id = u.id
                   LEFT JOIN categories c ON l.category_id = c.id
                   LEFT JOIN listing_images li ON l.id = li.listing_id AND li.is_primary = 1
-                  " . (!empty($where_conditions) ? "WHERE " . implode(" AND ", $where_conditions) : "") . "
+                  LEFT JOIN favorites f ON l.id = f.listing_id";
+        
+        $params[":user_id_for_fav"] = $user_id;
+
+        $query .= " " . (!empty($where_conditions) ? "WHERE " . implode(" AND ", $where_conditions) : "") . "
                   ORDER BY {$order_by}
                   LIMIT {$limit} OFFSET {$offset}";
 
@@ -106,54 +112,77 @@ class Listing {
         error_log("SQL Params: " . print_r($params, true));
         $stmt->execute($params);
 
-
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getMostViewed($limit = 4) {
+    public function getMostViewed($limit = 4, $user_id = null) {
         $query = "SELECT l.*, u.username, u.first_name, u.last_name, u.avatar_url,
                         c.name as category_name, c.slug as category_slug,
-                        li.image_url as primary_image
-                FROM " . $this->table_name . " l
+                        li.image_url as primary_image";
+        
+        if ($user_id) {
+            $query .= ", CASE WHEN f.listing_id IS NOT NULL THEN 1 ELSE 0 END as is_favorited";
+        }
+
+        $query .= " FROM " . $this->table_name . " l
                 LEFT JOIN users u ON l.user_id = u.id
                 LEFT JOIN categories c ON l.category_id = c.id
-                LEFT JOIN listing_images li ON l.id = li.listing_id AND li.is_primary = 1
-                WHERE l.is_active = 1
+                LEFT JOIN listing_images li ON l.id = li.listing_id AND li.is_primary = 1";
+        
+        if ($user_id) {
+            $query .= " LEFT JOIN favorites f ON l.id = f.listing_id AND f.user_id = :user_id";
+        }
+
+        $query .= " WHERE l.is_active = 1
                 ORDER BY l.views_count DESC, l.created_at DESC
                 LIMIT :limit";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":limit", $limit, PDO::PARAM_INT);
+        if ($user_id) {
+            $stmt->bindParam(":user_id", $user_id);
+        }
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
 
-    public function findById($id) {
+    public function findById($id, $user_id = null) {
         $query = "SELECT l.*, u.username, u.first_name, u.last_name, u.avatar_url, u.phone,
-                         c.name as category_name, c.slug as category_slug
-                  FROM " . $this->table_name . " l
+                         c.name as category_name, c.slug as category_slug";
+        
+        if ($user_id) {
+            $query .= ", CASE WHEN f.listing_id IS NOT NULL THEN 1 ELSE 0 END as is_favorited";
+        }
+
+        $query .= " FROM " . $this->table_name . " l
                   LEFT JOIN users u ON l.user_id = u.id
-                  LEFT JOIN categories c ON l.category_id = c.id
-                  WHERE l.id = :id AND l.is_active = 1
+                  LEFT JOIN categories c ON l.category_id = c.id";
+        
+        if ($user_id) {
+            $query .= " LEFT JOIN favorites f ON l.id = f.listing_id AND f.user_id = :user_id";
+        }
+
+        $query .= " WHERE l.id = :id AND l.is_active = 1
                   LIMIT 1";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $id);
+        if ($user_id) {
+            $stmt->bindParam(":user_id", $user_id);
+        }
         $stmt->execute();
 
         $listing = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($listing) {
-            // Get all images for this listing
             $images_query = "SELECT * FROM listing_images WHERE listing_id = :listing_id ORDER BY sort_order ASC";
             $images_stmt = $this->conn->prepare($images_query);
             $images_stmt->bindParam(":listing_id", $id);
             $images_stmt->execute();
-            $listing['images'] = $images_stmt->fetchAll(PDO::FETCH_ASSOC);
+            $listing["images"] = $images_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Increment view count
             $this->incrementViews($id);
         }
 

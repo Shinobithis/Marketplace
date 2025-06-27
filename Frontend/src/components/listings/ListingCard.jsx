@@ -5,8 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Heart, MapPin, Clock, Eye, MessageCircle } from 'lucide-react';
 
-const ListingCard = ({ listing, onFavorite, isFavorited = false }) => {
+const ListingCard = ({ listing, onFavorite }) => {
+  console.log("ListingCard received listing:", listing);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(listing.is_favorited);
 
   const formatPrice = (price) => {
     if (price === 0 || price === '0.00') return 'Free';
@@ -68,9 +70,33 @@ const ListingCard = ({ listing, onFavorite, isFavorited = false }) => {
     
     setIsLoading(true);
     try {
-      await onFavorite?.(listing.id);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.log("User not authenticated. Cannot favorite.");
+        setIsLoading(false);
+        return;
+      }
+
+      const method = isFavorited ? "DELETE" : "POST";
+      console.log("Attempting to favorite/unfavorite listing with ID:", listing.id);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/favorites/${listing.id}`, {
+        method: method,
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const responseData = await response.json();
+        setIsFavorited(responseData.data.is_favorited);
+        await onFavorite?.(listing.id);
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to toggle favorite:", errorData.message);
+      }
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      console.error("Error toggling favorite:", error);
     } finally {
       setIsLoading(false);
     }
@@ -85,21 +111,26 @@ const ListingCard = ({ listing, onFavorite, isFavorited = false }) => {
         <div className="aspect-square bg-gray-200 overflow-hidden">
           {imageUrl ? (
             <img 
-              src={listing.primary_image || 
+              src={`${import.meta.env.VITE_API_BASE_URL}${listing.primary_image || 
                   (listing.images && listing.images.length > 0 ? listing.images[0].image_url : 
-                 `${import.meta.env.VITE_API_BASE_URL}uploads/icons/placeholder.svg`)}
+                 `uploads/icons/placeholder.svg`)}`}
               alt={listing.title}
-              className="w-full h-48 object-cover rounded-t-lg"
+              className="w-full h-full object-cover rounded-t-lg"
               onError={(e) => { e.target.onerror = null; e.target.src = `${import.meta.env.VITE_API_BASE_URL}uploads/icons/placeholder.svg`; }}
             />
           ) : null}
+
           <div 
             className={`w-full h-full flex items-center justify-center text-gray-400 ${imageUrl ? 'hidden' : 'flex'}`}
             style={{ display: imageUrl ? 'none' : 'flex' }}
           >
             <div className="text-center">
-              <svg className="w-16 h-16 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+              <svg xmlns="http://www.w3.org/2000/svg" 
+                 fill={isFavorited ? "red" : "none"} 
+                 viewBox="0 0 24 24" 
+                 strokeWidth={1.5} 
+                 stroke="currentColor" 
+                 className="w-6 h-6">
               </svg>
               <span className="text-sm">No image</span>
             </div>

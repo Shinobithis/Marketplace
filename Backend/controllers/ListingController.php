@@ -23,32 +23,38 @@ class ListingController {
     }
 
     public function getAll() {
+        $user_data = AuthMiddleware::optionalAuth();
+        $user_id = $user_data["id"] ?? null;
+
         $filters = [
-            'category_id' => $_GET['category_id'] ?? null,
-            'search' => $_GET['search'] ?? null,
-            'is_free' => $_GET['is_free'] ?? null,
-            'condition' => $_GET['condition'] ?? null,
-            'min_price' => $_GET['min_price'] ?? null,
-            'max_price' => $_GET['max_price'] ?? null,
-            'sort' => $_GET['sort'] ?? 'newest',
-            'limit' => $_GET['limit'] ?? 20,
-            'offset' => $_GET['offset'] ?? 0
+            "category_id" => $_GET["category_id"] ?? null,
+            "search" => $_GET["search"] ?? null,
+            "is_free" => $_GET["is_free"] ?? null,
+            "condition" => $_GET["condition"] ?? null,
+            "min_price" => $_GET["min_price"] ?? null,
+            "max_price" => $_GET["max_price"] ?? null,
+            "sort" => $_GET["sort"] ?? "newest",
+            "limit" => $_GET["limit"] ?? 20,
+            "offset" => $_GET["offset"] ?? 0
         ];
 
-        $listings = $this->listing->getAll($filters);
+        $listings = $this->listing->getAll($filters, $user_id); // <--- This line is correct
         $total = $this->listing->getCount($filters);
 
         Response::success([
-            'listings' => $listings,
-            'total' => $total,
-            'limit' => (int)$filters['limit'],
-            'offset' => (int)$filters['offset']
+            "listings" => $listings,
+            "total" => $total,
+            "limit" => (int)$filters["limit"],
+            "offset" => (int)$filters["offset"]
         ]);
     }
 
     public function getFeatured() {
+        $user_data = AuthMiddleware::optionalAuth();
+        $user_id = $user_data["id"] ?? null;
+
         $limit = $_GET["limit"] ?? 4;
-        $listings = $this->listing->getMostViewed($limit);
+        $listings = $this->listing->getMostViewed($limit, $user_id);
 
         Response::success($listings);
     }
@@ -56,17 +62,18 @@ class ListingController {
 
 
     public function getById($id) {
-        $listing = $this->listing->findById($id);
+        $user_data = AuthMiddleware::optionalAuth();
+        $user_id = $user_data["id"] ?? null;
+
+        $listing = $this->listing->findById($id, $user_id);
 
         if (!$listing) {
             Response::notFound("Listing not found");
         }
 
-        // Increment view count
         $this->listing->incrementViews($id);
         
-        // Get updated listing with new view count
-        $listing = $this->listing->findById($id);
+        $listing = $this->listing->findById($id, $user_id);
 
         Response::success($listing);
     }
@@ -158,7 +165,6 @@ class ListingController {
         $user_data = AuthMiddleware::authenticate();
         $data = json_decode(file_get_contents("php://input"), true);
 
-        // Check if listing exists and belongs to user
         $existing_listing = $this->listing->findById($id);
         if (!$existing_listing) {
             Response::notFound("Listing not found");

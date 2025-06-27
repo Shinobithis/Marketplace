@@ -17,6 +17,7 @@ require_once __DIR__ . '/../controllers/ListingController.php';
 require_once __DIR__ . '/../controllers/CategoryController.php';
 require_once __DIR__ . '/../controllers/MessageController.php';
 require_once __DIR__ . '/../controllers/AdminController.php';
+require_once __DIR__ . '/../controllers/FavoriteController.php';
 require_once __DIR__ . '/../utils/Response.php';
 
 // Get request method and URI
@@ -68,6 +69,11 @@ try {
         case 'admin':
             $controller = new AdminController();
             handleAdminRoutes($controller, $segments, $request_method);
+            break;
+
+        case 'favorites':
+            $controller = new FavoriteController();
+            handleFavoriteRoutes($controller, $segments, $request_method);
             break;
             
         case '':
@@ -277,3 +283,31 @@ function handleAdminRoutes($controller, $segments, $method) {
     }
 }
 
+function handleFavoriteRoutes($controller, $segments, $request_method) {
+    switch ($request_method) {
+        case 'GET':
+            if (isset($segments[1]) && $segments[1] === 'user') {
+                $controller->getUserFavorites();
+            } else {
+                Response::error("Invalid favorite route", 404);
+            }
+            break;
+        case 'POST':
+            if (isset($segments[1])) { 
+                $controller->addFavorite($segments[1]);
+            } else {
+                Response::error("Listing ID required", 400);
+            }
+            break;
+        case 'DELETE':
+            if (isset($segments[1])) { 
+                $controller->removeFavorite($segments[1]);
+            } else {
+                Response::error("Listing ID required", 400);
+            }
+            break;
+        default:
+            Response::error("Method not allowed", 405);
+            break;
+    }
+}

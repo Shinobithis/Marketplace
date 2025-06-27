@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext';
 
 const CreateListingPage = () => {
     const { user, isAuthenticated } = useAuth();
-    const { toast: showToast } = useToast();
+    const { toast } = useToast();
     const navigate = useNavigate();
 
     const [title, setTitle] = useState('');
@@ -20,7 +20,7 @@ const CreateListingPage = () => {
 
     useEffect(() => {
         if (!isAuthenticated) {
-          showToast('You need to be logged in to create a listing.', 'error');
+          toast.error("You need to be logged in to create a listing.");
           navigate('/login');
         }
 
@@ -31,15 +31,15 @@ const CreateListingPage = () => {
             if (response.ok && data.success) {
               setCategories(data.data);
             } else {
-              showToast(data.message || 'Failed to fetch categories', 'error');
+              toast.error(data.message || "Failed to fetch categories");
             }
         } catch (error) {
             console.error('Error fetching categories:', error);
-            showToast('Network error or server unreachable for categories.', 'error');
+            toast.error("Network error or server unreachable for categories.");
         }
         };
         fetchCategories();
-    }, [isAuthenticated, navigate, showToast]);
+    }, [isAuthenticated, navigate, toast]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,8 +68,7 @@ const CreateListingPage = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        showToast('Listing created successfully!', 'success');
-        // Clear form
+        toast.success("Listing created successfully!");
         setTitle('');
         setDescription('');
         setPrice('');
@@ -77,21 +76,21 @@ const CreateListingPage = () => {
         setConditionType('');
         setLocation('');
         setSelectedFiles([]);
-        // Redirect to listings page
-        navigate('/listings');
+        console.log("Navigating to:", `/listing/${data.data.id}`);
+        navigate(`/listing/${data.data.id}`);
       } else {
-        showToast(data.message || 'Failed to create listing', 'error');
+        toast.error(data.message || "Failed to create listing");
       }
     } catch (error) {
       console.error('Error creating listing:', error);
-      showToast('Network error or server unreachable.', 'error');
+      toast.error("Network error or server unreachable.");
     } finally {
       setLoading(false);
     }
     };
 
   if (!isAuthenticated) {
-    return null; // Or a loading spinner, as navigation will handle redirection
+    return null;
   }
 
   return (
@@ -187,7 +186,7 @@ const CreateListingPage = () => {
         <div className="flex items-center justify-between">
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-blue-500 hover:bg-blue-700 text-white cursor-pointer font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             disabled={loading}
           >
             {loading ? 'Creating...' : 'Create Listing'}
