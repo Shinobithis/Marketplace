@@ -17,6 +17,19 @@ const CreateListingPage = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState([]);
+    const [isFreeItem, setIsFreeItem] = useState(false);
+
+    const handleCategoryChange = (e) => {
+        const selectedCategoryId = e.target.value;
+        setCategoryId(selectedCategoryId);
+        const selectedCategory = categories.find(cat => cat.id === parseInt(selectedCategoryId));
+        if (selectedCategory && selectedCategory.name === "Free Items") {
+            setIsFreeItem(true);
+            setPrice('0'); // Automatically set price to 0 for free items
+        } else {
+            setIsFreeItem(false);
+        }
+    };
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -127,6 +140,7 @@ const CreateListingPage = () => {
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             required
+            disabled={isFreeItem}
           />
         </div>
         <div className="mb-4">
@@ -135,7 +149,7 @@ const CreateListingPage = () => {
             id="category"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
+            onChange={handleCategoryChange}
             required
           >
             <option value="">Select a category</option>

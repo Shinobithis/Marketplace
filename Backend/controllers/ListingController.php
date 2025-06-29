@@ -101,6 +101,8 @@ class ListingController {
             $category = $this->category->findById($data["category_id"]);
             if (!$category) {
                 $validator->addError("category_id", "Invalid category");
+            } else if ($category["name"] === "Free Items") {
+                $data["price"] = 0;
             }
         }
 
@@ -273,4 +275,3 @@ class ListingController {
         ]);
     }
 }
-
