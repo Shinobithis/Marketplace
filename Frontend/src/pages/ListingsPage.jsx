@@ -9,41 +9,65 @@ const ListingsPage = () => {
 
   const location = useLocation();
 
-  useEffect(() => {
-    const fetchListings = async () => {
-      setLoading(true);
-      setError(null);
+  const fetchListings = async () => {
+    setLoading(true);
+    setError(null);
 
-      const params = new URLSearchParams(location.search);
-      const searchQuery = params.get('search');
+    const params = new URLSearchParams(location.search);
+    const searchQuery = params.get('search');
 
-      let apiUrl = `${import.meta.env.VITE_API_BASE_URL}/listings`;
-      if (searchQuery) {
-        apiUrl += `${apiUrl.includes('?') ? '&' : '?'}search=${encodeURIComponent(searchQuery)}`;
+    let apiUrl = `${import.meta.env.VITE_API_BASE_URL}/listings`;
+    if (searchQuery) {
+      apiUrl += `${apiUrl.includes('?') ? '&' : '?'}search=${encodeURIComponent(searchQuery)}`;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
-      try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+      const response = await fetch(apiUrl, {
+        headers: headers
+      });
+      const data = await response.json();
 
-        if (response.ok && data.success) {
-          console.log("Data received from /listings API:", data.data.listings);
-          setListings(data.data.listings || []);
-        } else {
-          setError(data.message || 'Failed to fetch listings');
-          setListings([]);
-        }
-      } catch (err) {
-        setError('Network error or server unreachable');
-        console.error('Error fetching listings:', err);
+      if (response.ok && data.success) {
+        console.log("Data received from /listings API:", data.data.listings);
+        setListings(data.data.listings || []);
+      } else {
+        setError(data.message || 'Failed to fetch listings');
         setListings([]);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      setError('Network error or server unreachable');
+      console.error('Error fetching listings:', err);
+      setListings([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchListings();
   }, [location.search]);
+
+  const handleFavoriteToggle = async (listingId) => {
+    console.log("ListingsPage handleFavoriteToggle called for listing:", listingId);
+    
+    // Update the local state immediately for better UX
+    setListings(prevListings =>
+      prevListings.map(l =>
+        l.id === listingId ? { ...l, is_favorited: !l.is_favorited } : l
+      )
+    );
+
+    // Optionally refresh the data from server to ensure consistency
+    setTimeout(() => {
+      fetchListings();
+    }, 500);
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading listings...</div>;
@@ -61,7 +85,11 @@ const ListingsPage = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
+            <ListingCard 
+              key={listing.id} 
+              listing={listing} 
+              onFavorite={handleFavoriteToggle}
+            />
           ))}
           {console.log("Passing to ListingCard:", listings)}
         </div>

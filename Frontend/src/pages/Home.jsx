@@ -12,20 +12,29 @@ const Home = () => {
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchFeaturedListings = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/listings/featured`);
-        const data = await response.json();
-        if (response.ok && data.success) {
-          setFeaturedListings(data.data);
-        } else {
-          console.error("Failed to fetch featured listings:", data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching featured listings:", error);
+  const fetchFeaturedListings = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
-    };
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/listings/featured`, {
+        headers: headers
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        console.log("Featured listings fetched:", data.data);
+        setFeaturedListings(data.data);
+      } else {
+        console.error("Failed to fetch featured listings:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching featured listings:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchFeaturedListings();
 
     const fetchCategories = async () => {
@@ -42,16 +51,32 @@ const Home = () => {
       }
     };
 
-  fetchCategories();
+    fetchCategories();
   }, []);
 
   const handleSearch = (e) => {
-  e.preventDefault();
+    e.preventDefault();
     if (searchQuery.trim()) {
       window.location.href = `/listings?search=${encodeURIComponent(searchQuery)}`;
     }
   };
 
+  const handleFavoriteToggle = async (listingId) => {
+    console.log("Home handleFavoriteToggle called for listing:", listingId);
+    
+    // Update the local state immediately for better UX
+    setFeaturedListings(prevListings =>
+      prevListings.map(l =>
+        l.id === listingId ? { ...l, is_favorited: !l.is_favorited } : l
+      )
+    );
+
+    // Optionally refresh the data from server to ensure consistency
+    // This can be commented out if immediate UI update is sufficient
+    setTimeout(() => {
+      fetchFeaturedListings();
+    }, 500);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -159,7 +184,7 @@ const Home = () => {
               <ListingCard
                 key={listing.id}
                 listing={listing}
-                onFavorite={(id) => console.log('Favorited:', id)}
+                onFavorite={handleFavoriteToggle}
               />
             ))}
           </div>
@@ -226,4 +251,3 @@ const Home = () => {
 };
 
 export default Home;
-

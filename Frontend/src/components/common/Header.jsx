@@ -71,7 +71,7 @@ const Header = () => {
             {isAuthenticated ? (
               <>
                 <Link to="/create-listing">
-                  <Button size="sm" className="flex items-center space-x-1">
+                  <Button size="sm" className="flex items-center space-x-1 cursor-pointer">
                     <Plus className="h-4 w-4" />
                     <span>Sell</span>
                   </Button>

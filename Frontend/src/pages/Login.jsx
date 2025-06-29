@@ -143,25 +143,6 @@ const Login = () => {
                 {loading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
-
-            {/* Demo Accounts */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-3">Demo accounts:</p>
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Regular user:</span>
-                  <span className="font-mono">user@bsg.com</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Admin user:</span>
-                  <span className="font-mono">admin@bsg.com</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Password:</span>
-                  <span className="font-mono">any password</span>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
 

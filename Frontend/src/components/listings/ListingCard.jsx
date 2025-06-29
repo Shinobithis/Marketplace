@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +8,13 @@ import { Heart, MapPin, Clock, Eye, MessageCircle } from 'lucide-react';
 const ListingCard = ({ listing, onFavorite }) => {
   console.log("ListingCard received listing:", listing);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(listing.is_favorited);
+  const [isFavorited, setIsFavorited] = useState(Boolean(listing.is_favorited));
+
+  // Sync with prop changes
+  useEffect(() => {
+    console.log("ListingCard useEffect - listing.is_favorited:", listing.is_favorited);
+    setIsFavorited(Boolean(listing.is_favorited));
+  }, [listing.is_favorited]);
 
   const formatPrice = (price) => {
     if (price === 0 || price === '0.00') return 'Free';
@@ -69,6 +75,7 @@ const ListingCard = ({ listing, onFavorite }) => {
     if (isLoading) return;
     
     setIsLoading(true);
+    
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -78,7 +85,9 @@ const ListingCard = ({ listing, onFavorite }) => {
       }
 
       const method = isFavorited ? "DELETE" : "POST";
-      console.log("Attempting to favorite/unfavorite listing with ID:", listing.id);
+      console.log(`Attempting to ${isFavorited ? 'unfavorite' : 'favorite'} listing with ID:`, listing.id);
+      console.log("Current isFavorited state:", isFavorited);
+      
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/favorites/${listing.id}`, {
         method: method,
         headers: {
@@ -87,10 +96,39 @@ const ListingCard = ({ listing, onFavorite }) => {
         },
       });
 
+      console.log("Response status:", response.status);
+      
       if (response.ok) {
         const responseData = await response.json();
-        setIsFavorited(responseData.data.is_favorited);
-        await onFavorite?.(listing.id);
+        console.log("Favorite response:", responseData);
+        
+        // Update local state based on the response
+        if (responseData.data && typeof responseData.data.is_favorited === 'boolean') {
+          setIsFavorited(responseData.data.is_favorited);
+        } else {
+          // Fallback: toggle the state
+          setIsFavorited(!isFavorited);
+        }
+        
+        // Call parent callback to update parent state
+        if (onFavorite) {
+          await onFavorite(listing.id);
+        }
+      } else if (response.status === 409) {
+        // Handle conflict - item already favorited/unfavorited
+        console.log("Conflict response - item already in desired state");
+        // For conflict, we should check what the current state actually is
+        // by making a separate request or handling it differently
+        const errorData = await response.json();
+        console.log("Conflict error data:", errorData);
+        
+        // If we get a conflict on POST, it means it's already favorited
+        // If we get a conflict on DELETE, it means it's already not favorited
+        if (method === "POST") {
+          setIsFavorited(true);
+        } else {
+          setIsFavorited(false);
+        }
       } else {
         const errorData = await response.json();
         console.error("Failed to toggle favorite:", errorData.message);
@@ -118,23 +156,21 @@ const ListingCard = ({ listing, onFavorite }) => {
               className="w-full h-full object-cover rounded-t-lg"
               onError={(e) => { e.target.onerror = null; e.target.src = `${import.meta.env.VITE_API_BASE_URL}uploads/icons/placeholder.svg`; }}
             />
-          ) : null}
-
-          <div 
-            className={`w-full h-full flex items-center justify-center text-gray-400 ${imageUrl ? 'hidden' : 'flex'}`}
-            style={{ display: imageUrl ? 'none' : 'flex' }}
-          >
-            <div className="text-center">
-              <svg xmlns="http://www.w3.org/2000/svg" 
-                 fill={isFavorited ? "red" : "none"} 
-                 viewBox="0 0 24 24" 
-                 strokeWidth={1.5} 
-                 stroke="currentColor" 
-                 className="w-6 h-6">
-              </svg>
-              <span className="text-sm">No image</span>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <div className="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                   fill="none" 
+                   viewBox="0 0 24 24" 
+                   strokeWidth={1.5} 
+                   stroke="currentColor" 
+                   className="w-12 h-12 mx-auto mb-2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                </svg>
+                <span className="text-sm">No image</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Favorite Button */}
@@ -144,7 +180,11 @@ const ListingCard = ({ listing, onFavorite }) => {
           className="absolute top-2 right-2 p-2 rounded-full bg-white/80 hover:bg-white transition-colors disabled:opacity-50"
         >
           <Heart 
-            className={`h-4 w-4 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
+            className={`h-4 w-4 transition-colors ${
+              isFavorited 
+                ? 'fill-red-500 text-red-500' 
+                : 'text-gray-600 hover:text-red-400'
+            }`} 
           />
         </button>
 
@@ -230,4 +270,3 @@ const ListingCard = ({ listing, onFavorite }) => {
 };
 
 export default ListingCard;
-

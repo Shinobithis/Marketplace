@@ -35,7 +35,7 @@ class FavoriteController {
         }
 
         if ($this->favorite->add($user_id, $listing_id)) {
-            Response::success(["is_favorited" => false], "Listing removed from favorites");
+            Response::success(["is_favorited" => true], "Listing added to favorites");
         } else {
             Response::error("Failed to add listing to favorites", 500);
         }

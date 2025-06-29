@@ -40,7 +40,8 @@ class Favorite {
         return $stmt->fetchColumn() > 0;
     }
 
-    public function getByUser($user_id) {
+    public function getByUser($user_id) {   
+        error_log("Executing getByUser for user_id: " . $user_id);
         $query = "SELECT l.*, u.username, u.first_name, u.last_name, u.avatar_url,
                          c.name as category_name, c.slug as category_slug,
                          li.image_url as primary_image
@@ -52,6 +53,7 @@ class Favorite {
                   WHERE f.user_id = :user_id AND l.is_active = 1
                   ORDER BY f.created_at DESC";
 
+        error_log("SQL Query for getByUser: " . $query);
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":user_id", $user_id);
         $stmt->execute();

@@ -15,7 +15,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on app start
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     
@@ -44,8 +43,9 @@ export const AuthProvider = ({ children }) => {
         const data = await response.json();
 
         if (response.ok && data.success) {
-          localStorage.setItem('token', data.data.token);
-          localStorage.setItem('user', JSON.stringify(data.data.user));
+          console.log("Login successful. Token received:", data.data.token);
+          localStorage.setItem("token", data.data.token);
+          localStorage.setItem("user", JSON.stringify(data.data.user));
           setUser(data.data.user);
           return { success: true };
         } else {
@@ -70,8 +70,9 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
+        console.log("Registration successful. Token received:", data.data.token);
+        localStorage.setItem("token", data.data.token);
+        localStorage.setItem("user", JSON.stringify(data.data.user));
         setUser(data.data.user);
         return { success: true };
       } else {
