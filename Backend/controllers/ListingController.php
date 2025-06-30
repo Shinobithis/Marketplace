@@ -72,9 +72,6 @@ class ListingController {
         }
 
         $this->listing->incrementViews($id);
-        
-        $listing = $this->listing->findById($id, $user_id);
-
         Response::success($listing);
     }
 
@@ -245,33 +242,38 @@ class ListingController {
     }
 
     public function search() {
-        $query = $_GET['q'] ?? '';
+        $query = $_GET["q"] ?? "";
         
         if (empty($query)) {
             Response::error("Search query is required");
         }
 
         $filters = [
-            'search' => $query,
-            'category_id' => $_GET['category_id'] ?? null,
-            'is_free' => $_GET['is_free'] ?? null,
-            'condition' => $_GET['condition'] ?? null,
-            'min_price' => $_GET['min_price'] ?? null,
-            'max_price' => $_GET['max_price'] ?? null,
-            'sort' => $_GET['sort'] ?? 'newest',
-            'limit' => $_GET['limit'] ?? 20,
-            'offset' => $_GET['offset'] ?? 0
+            "search" => $query,
+            "category_id" => $_GET["category_id"] ?? null,
+            "is_free" => $_GET["is_free"] ?? null,
+            "condition" => $_GET["condition"] ?? null,
+            "min_price" => $_GET["min_price"] ?? null,
+            "max_price" => $_GET["max_price"] ?? null,
+            "sort" => $_GET["sort"] ?? "newest",
+            "limit" => $_GET["limit"] ?? 20,
+            "offset" => $_GET["offset"] ?? 0
         ];
 
         $listings = $this->listing->getAll($filters);
         $total = $this->listing->getCount($filters);
 
         Response::success([
-            'listings' => $listings,
-            'total' => $total,
-            'query' => $query,
-            'limit' => (int)$filters['limit'],
-            'offset' => (int)$filters['offset']
+            "listings" => $listings,
+            "total" => $total,
+            "query" => $query,
+            "limit" => (int)$filters["limit"],
+            "offset" => (int)$filters["offset"]
         ]);
+    }
+
+    public function incrementListingViews($id) {
+        $this->listing->incrementViews($id);
+        Response::success(null, "View count incremented");
     }
 }

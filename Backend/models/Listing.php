@@ -182,10 +182,7 @@ class Listing {
             $images_stmt->bindParam(":listing_id", $id);
             $images_stmt->execute();
             $listing["images"] = $images_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            $this->incrementViews($id);
         }
-
         return $listing;
     }
 
