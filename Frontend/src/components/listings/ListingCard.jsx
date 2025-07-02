@@ -148,14 +148,12 @@ const ListingCard = ({ listing, onFavorite }) => {
         {/* Image */}
         <div className="aspect-square bg-gray-200 overflow-hidden">
           {imageUrl ? (
-            <img 
-              src={`${import.meta.env.VITE_API_BASE_URL}${listing.primary_image || 
-                  (listing.images && listing.images.length > 0 ? listing.images[0].image_url : 
-                 `uploads/icons/placeholder.svg`)}`}
-              alt={listing.title}
-              className="w-full h-full object-cover rounded-t-lg"
-              onError={(e) => { e.target.onerror = null; e.target.src = `${import.meta.env.VITE_API_BASE_URL}uploads/icons/placeholder.svg`; }}
-            />
+          <img 
+            src={`${import.meta.env.VITE_API_BASE_URL}${listing.primary_image.substring(1)}`}
+            alt={listing.title}
+            className="w-full h-full object-cover rounded-t-lg"
+            onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/300'; }}
+          />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400">
               <div className="text-center">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 const Profile = () => {
   const { user, isAuthenticated, updateUser } = useAuth();
@@ -426,21 +426,22 @@ const Profile = () => {
                 {userListings.map((listing) => (
                   <div key={listing.id} className="bg-white rounded-lg shadow overflow-hidden">
                     <img
-                      src={listing.image_url || 'https://via.placeholder.com/300'}
+                      src={`${import.meta.env.VITE_API_BASE_URL}${listing.primary_image.substring(1)}`}
                       alt={listing.title}
                       className="w-full h-48 object-cover"
+                      onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/300'; }}
                     />
                     <div className="p-4">
                       <h3 className="text-lg font-semibold mb-2">{listing.title}</h3>
                       <p className="text-gray-600 text-sm mb-2">{listing.description}</p>
                       <p className="text-gray-900 font-bold text-lg mb-4">{formatPrice(listing.price)}</p>
                       <div className="flex justify-between items-center">
-                        <button
-                          onClick={() => navigate(`/listings/${listing.id}`)}
+                        <Link
+                          to={`/listing/${listing.id}`}
                           className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors"
                         >
                           View Details
-                        </button>
+                        </Link>
                         <button
                           onClick={() => handleDeleteListing(listing.id, 'listing')}
                           className="text-red-600 hover:text-red-800 text-sm"
@@ -469,21 +470,22 @@ const Profile = () => {
                 {userFavorites.map((listing) => (
                   <div key={listing.id} className="bg-white rounded-lg shadow overflow-hidden">
                     <img
-                      src={listing.image_url || 'https://via.placeholder.com/300'}
+                      src={`${import.meta.env.VITE_API_BASE_URL}${listing.primary_image.substring(1)}`}
                       alt={listing.title}
                       className="w-full h-48 object-cover"
+                      onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/300'; }}
                     />
                     <div className="p-4">
                       <h3 className="text-lg font-semibold mb-2">{listing.title}</h3>
                       <p className="text-gray-600 text-sm mb-2">{listing.description}</p>
                       <p className="text-gray-900 font-bold text-lg mb-4">{formatPrice(listing.price)}</p>
                       <div className="flex justify-between items-center">
-                        <button
-                          onClick={() => navigate(`/listings/${listing.id}`)}
+                        <Link
+                          to={`/listing/${listing.id}`}
                           className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors"
                         >
                           View Details
-                        </button>
+                        </Link>
                         <button
                           onClick={() => handleDeleteListing(listing.id, 'favorite')}
                           className="text-red-600 hover:text-red-800 text-sm"

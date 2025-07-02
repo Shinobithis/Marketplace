@@ -161,7 +161,8 @@ const ListingDetail = () => {
             <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden">
               {hasImages ? (
                 <img
-                  src={images[currentImageIndex]?.image_url || '/placeholder-image.jpg'}
+                  src={`${import.meta.env.VITE_API_BASE_URL}${images[currentImageIndex]?.image_url || 
+                  '/placeholder-image.svg'}`}
                   alt={listing.title}
                   className="w-full h-full object-cover"
                 />
@@ -186,7 +187,7 @@ const ListingDetail = () => {
                     }`}
                   >
                     <img
-                      src={image.image_url}
+                      src={`${import.meta.env.VITE_API_BASE_URL}${image.image_url}`}
                       alt={`${listing.title} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />

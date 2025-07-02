@@ -6,8 +6,7 @@ import { Input } from '@/components/ui/input';
 import { 
   Search, 
   ShoppingBag, 
-  User, 
-  MessageCircle, 
+  User,
   Plus,
   Menu,
   X,
@@ -33,15 +32,29 @@ const Header = () => {
     navigate('/');
   };
 
+  const getUserDisplayName = () => {
+    if (!user) return '';
+    return user.first_name || user.username;
+  };
+
   return (
     <header className="bg-white shadow-sm border-b sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <ShoppingBag className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">BSG</span>
-          </Link>
+          <div className="flex items-center space-x-4"> {/* Wrapper for logo and welcome message */}
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-2">
+              <ShoppingBag className="h-8 w-8 text-primary" />
+              <span className="text-2xl font-bold text-primary">BSG</span>
+            </Link>
+
+            {/* ADDED: Welcome message next to logo for logged-in users */}
+            {isAuthenticated && (
+              <div className="hidden lg:block text-sm text-gray-600">
+                Welcome, {getUserDisplayName()}!
+              </div>
+            )}
+          </div>
 
           {/* Search Bar - Desktop */}
           <div className="hidden md:flex flex-1 max-w-lg mx-8">
@@ -77,14 +90,13 @@ const Header = () => {
                   </Button>
                 </Link>
                 
-                <Link to="/messages" className="text-gray-700 hover:text-primary transition-colors">
-                  <MessageCircle className="h-5 w-5" />
-                </Link>
+                {/* REMOVED: MessageCircle Link */}
                 
                 <div className="relative group">
                   <button className="flex items-center space-x-1 text-gray-700 hover:text-primary transition-colors">
                     <User className="h-5 w-5" />
-                    <span>{user.firstName}</span>
+                    {/* FIXED: Display correct user name */}
+                    <span>{getUserDisplayName()}</span>
                   </button>
                   
                   {/* Dropdown Menu */}
@@ -191,13 +203,9 @@ const Header = () => {
                 >
                   Sell Item
                 </Link>
-                <Link 
-                  to="/messages" 
-                  className="block py-2 text-gray-700 hover:text-primary"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Messages
-                </Link>
+                
+                {/* REMOVED: Mobile Messages Link */}
+
                 <Link 
                   to="/profile" 
                   className="block py-2 text-gray-700 hover:text-primary"
@@ -250,4 +258,3 @@ const Header = () => {
 };
 
 export default Header;
-
