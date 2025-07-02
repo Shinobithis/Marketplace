@@ -7,7 +7,6 @@ import Footer from './components/common/Footer';
 import Home from './pages/Home';
 import ListingDetail from './pages/ListingDetail';
 import Profile from './pages/Profile';
-import Messages from './pages/Messages';
 import AdminDashboard from './pages/AdminDashboard';
 import CreateListingPage from './pages/CreateListingPage';
 import FreeItemsPage from './pages/FreeItemsPage';
@@ -46,12 +45,6 @@ function App() {
                     <Profile />
                   </ProtectedRoute>
                 } />
-                <Route path="/messages" element={
-                  <ProtectedRoute>
-                    <Messages />
-                  </ProtectedRoute>
-                } />
-                
                 {/* Admin Routes */}
                 <Route path="/admin/*" element={
                   <AdminRoute>
