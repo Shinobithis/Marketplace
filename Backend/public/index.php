@@ -186,7 +186,7 @@ function handleListingRoutes($controller, $segments, $method) {
 
 function handleCategoryRoutes($controller, $segments, $request_method) {
     switch (count($segments)) {
-        case 1: // /categories
+        case 1:
             if ($request_method == "GET") {
                 $controller->getAll();
             } else {

@@ -6,7 +6,6 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/Listing.php';
-require_once __DIR__ . '/../models/Message.php';
 require_once __DIR__ . '/../utils/Response.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 
@@ -14,14 +13,12 @@ class AdminController {
     private $db;
     private $user;
     private $listing;
-    private $message;
 
     public function __construct() {
         $database = new Database();
         $this->db = $database->getConnection();
         $this->user = new User($this->db);
         $this->listing = new Listing($this->db);
-        $this->message = new Message($this->db);
     }
 
     private function checkAdminAccess() {
@@ -41,7 +38,6 @@ class AdminController {
         $totalUsers = $this->user->getCount();
         $totalListings = $this->listing->getCount();
         $activeListings = $this->listing->getCount(['is_active' => 1]);
-        $totalMessages = $this->getTotalMessages();
 
         // Get recent users (last 5)
         $recentUsers = $this->user->getRecent(5);
@@ -53,7 +49,6 @@ class AdminController {
             'totalUsers' => $totalUsers,
             'totalListings' => $totalListings,
             'activeListings' => $activeListings,
-            'totalMessages' => $totalMessages,
             'recentUsers' => $recentUsers,
             'recentListings' => $recentListings
         ];
@@ -115,14 +110,6 @@ class AdminController {
         } else {
             Response::error("Failed to update listing status", 500);
         }
-    }
-
-    private function getTotalMessages() {
-        $query = "SELECT COUNT(*) as total FROM messages";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['total'] ?? 0;
     }
 }
 
