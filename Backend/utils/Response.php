@@ -42,4 +42,3 @@ class Response {
         self::error($message, 422, $errors);
     }
 }
-
